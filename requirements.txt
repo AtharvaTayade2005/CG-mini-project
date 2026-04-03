@@ -1,0 +1,6 @@
+# Python GUI Library for modern UI components
+customtkinter>=5.2.2
+
+# Note: 'tkinter' is part of the standard Python library.
+# You do not need to (and cannot) install it via pip in this file. 
+# It comes pre-installed with standard Python distributions.
