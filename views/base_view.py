@@ -26,16 +26,17 @@ class BaseView(ctk.CTkFrame):
         pass
 
     def set_explanation(self, text):
-        """Draws an informative explanation text box at the bottom of the canvas."""
+        """Draws an informative explanation text box at the top right of the canvas."""
         self.canvas.delete("explanation")
         if text:
-            # Create text at bottom center
+            # Create text at top right corner
             self.canvas.create_text(
-                self.width / 2, self.height - 40,
+                self.width - 20, 20,
                 text=text,
                 fill="#FBBF24", # Amber for high visibility 
                 font=("Inter", 16, "bold"),
                 tags="explanation",
-                justify="center",
-                width=self.width - 40 # enable text wrapping
+                justify="right",
+                anchor="ne",
+                width=max(200, self.width // 2.5) # enable text wrapping while keeping it to the right
             )
