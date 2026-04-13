@@ -226,3 +226,7 @@ class HeapView(BaseView):
         self.canvas.itemconfig(node['tr_circle'], fill="#7C3AED")
         self.canvas.itemconfig(node['arr_rect'], fill="#8B5CF6")
         self.animate_traversal(remaining)
+
+    def show_default_info(self):
+        if self.app:
+            self.app.update_info("O(log N)", "O(N)", ["class MinHeap:", "    def __init__(self):", "        self.heap = []", "    def insert(self, val)...", "    def extract_min(self)..."], None)

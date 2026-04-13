@@ -12,6 +12,22 @@ class BaseView(ctk.CTkFrame):
         self.width = 1
         self.height = 1
         self.animating = False
+        
+        self.app = None
+        self.is_paused = False
+        self.step_requested = False
+        self.playback_speed = 1.0
+
+    def toggle_pause(self):
+        self.is_paused = not self.is_paused
+        return self.is_paused
+
+    def step_forward(self):
+        if self.is_paused:
+            self.step_requested = True
+
+    def set_speed(self, value):
+        self.playback_speed = max(0.1, float(value))
 
     def on_resize(self, event):
         self.width = event.width

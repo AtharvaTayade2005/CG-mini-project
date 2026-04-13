@@ -272,3 +272,7 @@ class GraphView(BaseView):
         self.canvas.create_text(20, 20, anchor=tk.W, text=q_str, fill="white", font=("Inter", 14), tags="info_text")
         
         self.after(2000, lambda: self.animate_search(steps[1:], target_val))
+
+    def show_default_info(self):
+        if self.app:
+            self.app.update_info("O(V + E)", "O(V)", ["class Graph:", "    def add_vertex(self, v)...", "    def add_edge(self, u, v)...", "    def bfs_traverse(self)...", "    def dijkstra(self)..."], None)

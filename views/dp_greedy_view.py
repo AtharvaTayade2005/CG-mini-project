@@ -24,14 +24,14 @@ class DPGreedyView(BaseView):
         rows = len(dp)
         cols = len(dp[0])
         
-        # cell sizes — leave room at bottom for explanation text
-        cell_w = min(45, (self.width - 120) // max(cols, 1))
-        cell_h = min(40, (self.height - 200) // max(rows, 1))
+        # cell sizes — make wider to avoid text overlap
+        cell_w = min(55, (self.width - 150) // max(cols, 1))
+        cell_h = min(40, (self.height - 150) // max(rows, 1))
         
         start_x = self.width / 2 - (cols * cell_w) / 2
-        start_y = 60
+        start_y = 95
 
-        self.canvas.create_text(self.width/2, 25, text=title, fill="white", font=("Inter", 16, "bold"), tags="item")
+        self.canvas.create_text(self.width/2, 55, text=title, fill="white", font=("Inter", 16, "bold"), tags="item")
 
         active_i = state.get('i', -1)
         active_j = state.get('w', state.get('j', -1))
@@ -79,7 +79,7 @@ class DPGreedyView(BaseView):
                     bg = "#3B82F6"
                     
                 self.canvas.create_rectangle(x0, y0, x1, y1, fill=bg, outline="#2A2F45", tags="item")
-                self.canvas.create_text((x0+x1)/2, (y0+y1)/2, text=str(dp[i][j]), fill=text_col, font=("Inter", 11), tags="item")
+                self.canvas.create_text((x0+x1)/2, (y0+y1)/2, text=str(dp[i][j]), fill=text_col, font=("Inter", 11), width=cell_w-4, tags="item")
 
     def draw_frac(self, state):
         self.canvas.delete("item")
@@ -93,14 +93,14 @@ class DPGreedyView(BaseView):
         padding = 50
         bar_w = self.width - 2 * padding
         x0 = padding
-        y0 = 80
+        y0 = 110
         x1 = x0 + bar_w
         y1 = y0 + 40
         
         fill_ratio = (capacity - rem) / capacity if capacity > 0 else 0
         fill_x = x0 + bar_w * fill_ratio
         
-        self.canvas.create_text(self.width/2, 40, text=f"Fractional Knapsack (Capacity: {capacity}, Remaining: {rem}, Value: {state.get('total_v', 0):.2f})", fill="white", font=("Inter", 15, "bold"), tags="item")
+        self.canvas.create_text(self.width/2, 70, text=f"Fractional Knapsack (Capacity: {capacity}, Remaining: {rem}, Value: {state.get('total_v', 0):.2f})", fill="white", font=("Inter", 15, "bold"), tags="item")
         
         # Outline
         self.canvas.create_rectangle(x0, y0, x1, y1, fill="#1E2336", outline="#3B82F6", width=2, tags="item")
@@ -121,7 +121,7 @@ class DPGreedyView(BaseView):
             ratio, w, v, orig_idx = it
             bx0 = start_x + i * (box_w + box_gap)
             bx1 = bx0 + box_w
-            by0 = 160
+            by0 = 190
             by1 = by0 + 90
             
             bg = "#2A2F45"
@@ -138,10 +138,10 @@ class DPGreedyView(BaseView):
             if frac_taken > 0:
                 self.canvas.create_rectangle(bx0+1, by1 - 88*frac_taken, bx1-1, by1-1, fill="#3B82F6", outline="", tags="item")
                 
-            self.canvas.create_text((bx0+bx1)/2, by0 + 18, text=f"W: {w}", fill="white", font=("Inter", 11, "bold"), tags="item")
-            self.canvas.create_text((bx0+bx1)/2, by0 + 36, text=f"V: {v}", fill="white", font=("Inter", 11), tags="item")
-            self.canvas.create_text((bx0+bx1)/2, by0 + 54, text=f"Ratio: {ratio:.2f}", fill="#A0AEC0", font=("Inter", 10), tags="item")
-            self.canvas.create_text((bx0+bx1)/2, by0 + 74, text=f"Taken: {frac_taken*100:.0f}%", fill="#10B981" if frac_taken > 0 else "#555", font=("Inter", 10, "bold"), tags="item")
+            self.canvas.create_text((bx0+bx1)/2, by0 + 17, text=f"W:{w}", fill="white", font=("Inter", 10, "bold"), tags="item")
+            self.canvas.create_text((bx0+bx1)/2, by0 + 34, text=f"V:{v}", fill="white", font=("Inter", 10), tags="item")
+            self.canvas.create_text((bx0+bx1)/2, by0 + 51, text=f"Rat:{ratio:.1f}", fill="#A0AEC0", font=("Inter", 9), tags="item")
+            self.canvas.create_text((bx0+bx1)/2, by0 + 72, text=f"Tk:{frac_taken*100:.0f}%", fill="#10B981" if frac_taken > 0 else "#555", font=("Inter", 9, "bold"), tags="item")
 
 
     def run_algo(self, algo_name, s1="", s2=""):
@@ -181,7 +181,19 @@ class DPGreedyView(BaseView):
             if msg:
                 self.set_explanation(msg)
                 
-            self.after(self.delay, self.animate_step)
+            if self.app and 'code' in state:
+                time_c = state.get('time_c', "O(?)")
+                space_c = state.get('space_c', "O(?)")
+                code = state.get('code', [])
+                line = state.get('line', -1)
+                self.app.update_info(time_c, space_c, code, line)
+
+            actual_delay = int(self.delay / getattr(self, 'playback_speed', 1.0))
+            self.after(actual_delay, self.animate_step)
         except StopIteration:
             self.animating = False
             self.generator = None
+
+    def show_default_info(self):
+        if self.app:
+            self.app.update_info("?", "?", ["Select an algorithm (Frac. Knapsack, 0/1 Knapsack, LCS)", "to load the visualization and code."], None)

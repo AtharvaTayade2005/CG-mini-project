@@ -21,6 +21,12 @@ class ArrayView(BaseView):
         self.draw_state({'arr': self.model.arr})
         self.set_explanation("Generated a new random array.")
 
+    def load_custom_data(self, val):
+        if self.animating: return
+        self.model.set_arr(val)
+        self.draw_state({'arr': self.model.arr})
+        self.set_explanation("Loaded custom array data.")
+
     def draw_items(self):
         if self.animating: return
         self.draw_state({'arr': self.model.arr})
@@ -130,13 +136,33 @@ class ArrayView(BaseView):
         if not self.generator:
             self.animating = False
             return
+            
+        if getattr(self, 'is_paused', False) and not getattr(self, 'step_requested', False):
+            self.after(100, self.animate_step)
+            return
+            
+        self.step_requested = False
         
         try:
             state = next(self.generator)
             self.draw_state(state)
             if 'msg' in state:
                 self.set_explanation(state['msg'])
-            self.after(self.delay, self.animate_step)
+            
+            if self.app and 'code' in state:
+                time_c = state.get('time_c', "O(?)")
+                space_c = state.get('space_c', "O(?)")
+                code = state.get('code', [])
+                line = state.get('line', -1)
+                self.app.update_info(time_c, space_c, code, line)
+
+            actual_delay = int(self.delay / getattr(self, 'playback_speed', 1.0))
+            self.after(actual_delay, self.animate_step)
         except StopIteration:
             self.animating = False
             self.generator = None
+
+    def show_default_info(self):
+        if self.app:
+            mode_text = "Sorting Algorithm" if self.mode == "sort" else "Search Algorithm"
+            self.app.update_info("?", "?", [f"Select a {mode_text} below", "to display its live code tracing."], None)

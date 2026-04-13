@@ -52,12 +52,13 @@ class App(ctk.CTk):
         # -- MAIN CONTENT AREA --
         self.main_frame = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=25, pady=25)
-        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_columnconfigure(0, weight=3) # Visualization weight
+        self.main_frame.grid_columnconfigure(1, weight=1) # Sidebar weight
         self.main_frame.grid_rowconfigure(1, weight=1)
 
         # -- TOP CONTROL PANEL --
         self.control_panel = ctk.CTkFrame(self.main_frame, height=80, corner_radius=12, fg_color=self.panel_color)
-        self.control_panel.grid(row=0, column=0, sticky="ew", padx=0, pady=(0, 20))
+        self.control_panel.grid(row=0, column=0, columnspan=2, sticky="ew", padx=0, pady=(0, 20))
         self.control_panel.grid_propagate(False)
 
         self.input_entry = ctk.CTkEntry(
@@ -72,16 +73,43 @@ class App(ctk.CTk):
         )
         self.input_entry.pack(side="left", padx=20, pady=20)
 
+        # -- BULK INPUT BTN --
+        self.btn_bulk = ctk.CTkButton(
+            self.control_panel, text="📋 Bulk Input", width=100, height=40,
+            command=self.open_bulk_input, 
+            fg_color="#4F46E5", hover_color="#4338CA",
+            font=ctk.CTkFont(family="Inter", size=13, weight="bold")
+        )
+        # Will be packed dynamically when view needs it
+
         self.action_buttons_frame = ctk.CTkFrame(self.control_panel, fg_color="transparent")
         self.action_buttons_frame.pack(side="left", fill="both", expand=True, padx=5, pady=0)
 
         # -- VISUALIZER VIEW CONTAINER --
-        self.view_container = ctk.CTkFrame(self.main_frame, corner_radius=12, fg_color=self.bg_color)
-        self.view_container.grid(row=1, column=0, sticky="nsew")
+        self.view_layout = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.view_layout.grid(row=1, column=0, sticky="nsew", padx=(0, 15))
+        self.view_layout.grid_rowconfigure(0, weight=1)
+        self.view_layout.grid_columnconfigure(0, weight=1)
+
+        self.view_container = ctk.CTkFrame(self.view_layout, corner_radius=12, fg_color=self.bg_color)
+        self.view_container.grid(row=0, column=0, sticky="nsew", pady=(0, 15))
         self.view_container.grid_rowconfigure(0, weight=1)
         self.view_container.grid_columnconfigure(0, weight=1)
         # Adding a subtle border wrapper for canvas
         self.view_container.configure(border_width=1, border_color="#2A2F45")
+
+        # -- PLAYBACK CONTROLS --
+        self.playback_panel = ctk.CTkFrame(self.view_layout, height=60, corner_radius=12, fg_color=self.panel_color)
+        self.playback_panel.grid(row=1, column=0, sticky="ew")
+        self.playback_panel.grid_propagate(False)
+        self.setup_playback_controls()
+
+        # -- INFO SIDEBAR --
+        self.info_sidebar = ctk.CTkFrame(self.main_frame, corner_radius=12, fg_color=self.panel_color)
+        self.info_sidebar.grid(row=1, column=1, sticky="nsew")
+        self.info_sidebar.grid_rowconfigure(3, weight=1)
+        self.info_sidebar.grid_columnconfigure(0, weight=1)
+        self.setup_info_sidebar()
 
         self.current_view = None
         self.current_view_name = None
@@ -130,6 +158,89 @@ class App(ctk.CTk):
         for widget in self.action_buttons_frame.winfo_children():
             widget.destroy()
 
+    def open_bulk_input(self):
+        from views.bulk_input import BulkInputDialog
+        dialog = BulkInputDialog(self)
+        self.wait_window(dialog)
+        val = dialog.get_result()
+        if val:
+            self.input_entry.delete(0, 'end')
+            self.input_entry.insert(0, val)
+            if hasattr(self.current_view, 'load_custom_data'):
+                self.current_view.load_custom_data(val)
+
+    def setup_playback_controls(self):
+        self.btn_play_pause = ctk.CTkButton(self.playback_panel, text="⏸ Pause", width=90, command=self.toggle_play_pause,
+                                            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+                                            fg_color="#10B981", hover_color="#059669")
+        self.btn_play_pause.pack(side="left", padx=15, pady=15)
+
+        self.btn_step = ctk.CTkButton(self.playback_panel, text="⏭ Step", width=90, command=self.step_forward,
+                                      font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+                                      fg_color="#F59E0B", hover_color="#D97706")
+        self.btn_step.pack(side="left", padx=10, pady=15)
+        
+        self.speed_slider = ctk.CTkSlider(self.playback_panel, from_=0.1, to=2.0, command=self.change_speed, width=150)
+        self.speed_slider.set(1.0)
+        self.speed_slider.pack(side="right", padx=20, pady=20)
+        
+        lbl_speed = ctk.CTkLabel(self.playback_panel, text="Speed:", font=ctk.CTkFont(family="Inter", size=13))
+        lbl_speed.pack(side="right", padx=5, pady=20)
+
+    def setup_info_sidebar(self):
+        self.lbl_comp_title = ctk.CTkLabel(self.info_sidebar, text="Complexity", font=ctk.CTkFont(family="Inter", size=16, weight="bold"), text_color="#A0AEC0")
+        self.lbl_comp_title.grid(row=0, column=0, padx=15, pady=(15, 5), sticky="w")
+        
+        self.comp_frame = ctk.CTkFrame(self.info_sidebar, fg_color="#111827", corner_radius=8)
+        self.comp_frame.grid(row=1, column=0, padx=15, pady=5, sticky="ew")
+        
+        self.lbl_time_comp = ctk.CTkLabel(self.comp_frame, text="Time: O(1)", font=ctk.CTkFont(family="Inter", size=14))
+        self.lbl_time_comp.pack(anchor="w", padx=15, pady=(10, 5))
+        self.lbl_space_comp = ctk.CTkLabel(self.comp_frame, text="Space: O(1)", font=ctk.CTkFont(family="Inter", size=14))
+        self.lbl_space_comp.pack(anchor="w", padx=15, pady=(0, 10))
+
+        self.lbl_code_title = ctk.CTkLabel(self.info_sidebar, text="Pseudocode", font=ctk.CTkFont(family="Inter", size=16, weight="bold"), text_color="#A0AEC0")
+        self.lbl_code_title.grid(row=2, column=0, padx=15, pady=(20, 5), sticky="w")
+        
+        self.code_textbox = ctk.CTkTextbox(self.info_sidebar, fg_color="#111827", text_color="#E5E7EB", font=ctk.CTkFont(family="Consolas", size=13), corner_radius=8, wrap="none")
+        self.code_textbox.grid(row=3, column=0, padx=15, pady=(0, 15), sticky="nsew")
+
+    def toggle_play_pause(self):
+        if hasattr(self.current_view, 'toggle_pause'):
+            # Tell view to pause, it should return its new state
+            paused = self.current_view.toggle_pause()
+            if paused:
+                self.btn_play_pause.configure(text="▶ Play", fg_color=self.accent_color, hover_color=self.accent_hover)
+            else:
+                self.btn_play_pause.configure(text="⏸ Pause", fg_color="#10B981", hover_color="#059669")
+
+    def step_forward(self):
+        if hasattr(self.current_view, 'step_forward'):
+            self.current_view.step_forward()
+
+    def change_speed(self, value):
+        if hasattr(self.current_view, 'set_speed'):
+            self.current_view.set_speed(value)
+
+    def update_info(self, time_c, space_c, code_lines, active_line=None):
+        self.lbl_time_comp.configure(text=f"Time: {time_c}")
+        self.lbl_space_comp.configure(text=f"Space: {space_c}")
+        
+        if not hasattr(self, '_current_pseudo') or self._current_pseudo != code_lines:
+            self.code_textbox.configure(state="normal")
+            self.code_textbox.delete("1.0", "end")
+            self.code_textbox.insert("1.0", "\\n".join(code_lines))
+            self.code_textbox.configure(state="disabled")
+            self._current_pseudo = code_lines
+            
+        if active_line is not None and 0 <= active_line < len(code_lines):
+            self.code_textbox.tag_remove("active", "1.0", "end")
+            start_idx = f"{active_line + 1}.0"
+            end_idx = f"{active_line + 1}.end"
+            self.code_textbox.tag_add("active", start_idx, end_idx)
+            self.code_textbox.tag_config("active", background="#F59E0B", foreground="#111827")
+            self.code_textbox.see(start_idx)
+
     def select_view(self, name):
         if self.current_view_name == name:
             return # Already selected
@@ -141,9 +252,25 @@ class App(ctk.CTk):
         self.clear_control_panel()
         self.input_entry.delete(0, 'end')
         self.update_sidebar_active_state(name)
+        
+        # Determine if Bulk Input is needed
+        if name == "Sorting":
+            self.btn_bulk.pack(side="left", padx=(0, 10), pady=20, before=self.action_buttons_frame)
+        else:
+            self.btn_bulk.pack_forget()
+
+        # Reset play button
+        self.btn_play_pause.configure(text="⏸ Pause", fg_color="#10B981", hover_color="#059669")
+        
+        # Show default pseudocode template for the selected view
+        if hasattr(self.current_view, 'show_default_info'):
+            self.current_view.show_default_info()
+        else:
+            self.update_info("-", "-", ["Load an algorithm or perform an action to view code."], None)
 
         if name == "Stack":
             self.current_view = StackView(self.view_container)
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_push = self.create_action_btn("Push", lambda: self.current_view.push(self.input_entry.get()))
@@ -156,6 +283,7 @@ class App(ctk.CTk):
         elif name == "Queue":
             from views.queue_view import QueueView
             self.current_view = QueueView(self.view_container)
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_in = self.create_action_btn("Enqueue", lambda: self.current_view.enqueue(self.input_entry.get()))
@@ -168,6 +296,7 @@ class App(ctk.CTk):
         elif name == "SLL":
             from views.linked_list_view import LinkedListView
             self.current_view = LinkedListView(self.view_container)
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_in_head = self.create_action_btn("Insert Head", lambda: self.current_view.insert_head(self.input_entry.get()))
@@ -187,6 +316,7 @@ class App(ctk.CTk):
         elif name == "Heap":
             from views.heap_view import HeapView
             self.current_view = HeapView(self.view_container)
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_insert = self.create_action_btn("Insert", lambda: self.current_view.insert(self.input_entry.get()))
@@ -211,6 +341,7 @@ class App(ctk.CTk):
         elif name == "AVL":
             from views.avl_tree_view import AVLTreeView
             self.current_view = AVLTreeView(self.view_container)
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_insert = self.create_action_btn("Insert", lambda: self.current_view.insert(self.input_entry.get()))
@@ -239,6 +370,7 @@ class App(ctk.CTk):
         elif name == "BST":
             from views.bst_view import BSTView
             self.current_view = BSTView(self.view_container)
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_insert = self.create_action_btn("Insert", lambda: self.current_view.insert(self.input_entry.get()))
@@ -267,6 +399,7 @@ class App(ctk.CTk):
         elif name == "Graph":
             from views.graph_view import GraphView
             self.current_view = GraphView(self.view_container)
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_add_v = self.create_action_btn("+ V", lambda: self.current_view.add_vertex(self.input_entry.get()))
@@ -305,6 +438,7 @@ class App(ctk.CTk):
         elif name == "Sorting":
             from views.array_view import ArrayView
             self.current_view = ArrayView(self.view_container, mode="sort")
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_gen = self.create_action_btn("New Array", self.current_view.generate_new)
@@ -329,6 +463,7 @@ class App(ctk.CTk):
         elif name == "Searching":
             from views.array_view import ArrayView
             self.current_view = ArrayView(self.view_container, mode="search")
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_gen = self.create_action_btn("New Array", self.current_view.generate_new)
@@ -344,6 +479,7 @@ class App(ctk.CTk):
         elif name == "DP":
             from views.dp_greedy_view import DPGreedyView
             self.current_view = DPGreedyView(self.view_container, mode="lcs")
+            self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
             
             btn_frac = self.create_action_btn("Frac. Knapsack", lambda: [setattr(self.current_view, 'mode', 'frac'), self.current_view.run_algo("FracKnapsack")])

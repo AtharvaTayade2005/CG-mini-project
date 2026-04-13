@@ -79,6 +79,11 @@ class QueueView(BaseView):
         }
         self.rects.append(new_item)
         self.set_explanation(f"ENQUEUE: Adding '{value}' to the rear of the queue. Queue follows FIFO (First In, First Out).")
+        
+        if self.app:
+            self.app.update_info("O(1)", "O(N)", 
+                ["def enqueue(queue, item):", "    queue.append(item)"], 1)
+
         self.animate_enqueue(new_item)
 
     def animate_enqueue(self, item):
@@ -111,6 +116,11 @@ class QueueView(BaseView):
         popped_item['x_target'] = self.width + 100 # leave left to right
         
         self.set_explanation(f"DEQUEUE: Removing front element '{popped_item['val']}' from the queue (FIFO — it was first in).")
+        
+        if self.app:
+            self.app.update_info("O(N)", "O(1)", 
+                ["def dequeue(queue):", "    if not queue.is_empty():", "        return queue.pop(0)"], 2)
+
         self.animate_dequeue(popped_item)
 
     def animate_dequeue(self, item):
@@ -167,3 +177,7 @@ class QueueView(BaseView):
             self.animating = False
             front = self.rects[0]['val'] if self.rects else 'None'
             self.set_explanation(f"DEQUEUE complete. Remaining elements shifted forward. Front is now: {front}. Size: {len(self.rects)}.")
+
+    def show_default_info(self):
+        if self.app:
+            self.app.update_info("O(1)", "O(N)", ["class Queue:", "    def __init__(self):", "        self.items = []", "    def enqueue(self, item)...", "    def dequeue(self)..."], None)

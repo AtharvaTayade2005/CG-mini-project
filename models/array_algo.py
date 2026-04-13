@@ -16,37 +16,65 @@ class ArrayModel:
 
     # --- SORTING GENERATORS ---
     def bubble_sort(self):
+        code = [
+            "def bubble_sort(arr):",               # 0
+            "    n = len(arr)",                    # 1
+            "    for i in range(n):",              # 2
+            "        for j in range(0, n-i-1):",   # 3
+            "            if arr[j] > arr[j + 1]:", # 4
+            "                swap(arr[j], arr[j + 1])" # 5
+        ]
+        time_c = "O(N²)"
+        space_c = "O(1)"
+        base = {'code': code, 'time_c': time_c, 'space_c': space_c}
+        
         arr = self.arr.copy()
         n = len(arr)
-        yield {'arr': arr.copy(), 'sorted': [], 'msg': "Starting Bubble Sort. We will bubble the largest elements to the right."}
+        yield {**base, 'arr': arr.copy(), 'sorted': [], 'msg': "Starting Bubble Sort.", 'line': 0}
+        yield {**base, 'arr': arr.copy(), 'sorted': [], 'msg': f"n = {n}", 'line': 1}
         for i in range(n):
+            yield {**base, 'arr': arr.copy(), 'sorted': list(range(n - i, n)), 'msg': f"i = {i}, starting pass.", 'line': 2}
             for j in range(0, n - i - 1):
-                yield {'arr': arr.copy(), 'compare': [j, j+1], 'sorted': list(range(n - i, n)), 'msg': f"Comparing {arr[j]} and {arr[j+1]}."}
+                yield {**base, 'arr': arr.copy(), 'compare': [j, j+1], 'sorted': list(range(n - i, n)), 'msg': f"Comparing {arr[j]} and {arr[j+1]}.", 'line': 4}
                 if arr[j] > arr[j + 1]:
-                    yield {'arr': arr.copy(), 'swap': [j, j+1], 'sorted': list(range(n - i, n)), 'msg': f"{arr[j]} > {arr[j+1]}, swapping them!"}
+                    yield {**base, 'arr': arr.copy(), 'swap': [j, j+1], 'sorted': list(range(n - i, n)), 'msg': f"{arr[j]} > {arr[j+1]}, swapping them!", 'line': 5}
                     arr[j], arr[j + 1] = arr[j + 1], arr[j]
-            yield {'arr': arr.copy(), 'sorted': list(range(n - i - 1, n)), 'msg': f"Pass complete. Largest remaining element is now at position {n - i - 1}."}
+            yield {**base, 'arr': arr.copy(), 'sorted': list(range(n - i - 1, n)), 'msg': f"Pass complete.", 'line': 3}
         self.arr = arr
-        yield {'arr': arr.copy(), 'sorted': list(range(n)), 'msg': "Array is completely sorted!"}
+        yield {**base, 'arr': arr.copy(), 'sorted': list(range(n)), 'msg': "Array is completely sorted!", 'line': 0}
 
     def insertion_sort(self):
+        code = [
+            "def insertion_sort(arr):",                 # 0
+            "    for i in range(1, len(arr)):",         # 1
+            "        key = arr[i]",                     # 2
+            "        j = i - 1",                        # 3
+            "        while j >= 0 and key < arr[j]:",   # 4
+            "            arr[j + 1] = arr[j]",          # 5
+            "            j -= 1",                       # 6
+            "        arr[j + 1] = key"                  # 7
+        ]
+        base = {'code': code, 'time_c': "O(N²)", 'space_c': "O(1)"}
         arr = self.arr.copy()
         n = len(arr)
         sorted_range = [0]
-        yield {'arr': arr.copy(), 'sorted': sorted_range, 'msg': "Starting Insertion Sort. First element is trivially sorted."}
+        yield {**base, 'arr': arr.copy(), 'sorted': sorted_range, 'msg': "Starting Insertion Sort.", 'line': 0}
         for i in range(1, n):
+            yield {**base, 'arr': arr.copy(), 'sorted': sorted_range, 'msg': f"Outer loop i={i}.", 'line': 1}
             key = arr[i]
             j = i - 1
-            yield {'arr': arr.copy(), 'compare': [i, j], 'sorted': sorted_range, 'msg': f"Selecting {key} to insert into the sorted left portion."}
+            yield {**base, 'arr': arr.copy(), 'compare': [i], 'sorted': sorted_range, 'msg': f"key = {key}", 'line': 2}
+            
             while j >= 0 and key < arr[j]:
-                yield {'arr': arr.copy(), 'compare': [j+1, j], 'sorted': sorted_range, 'swap': [j+1, j+2], 'msg': f"{arr[j]} > {key}, shifting {arr[j]} to the right."}
+                yield {**base, 'arr': arr.copy(), 'compare': [j+1, j], 'sorted': sorted_range, 'msg': f"{arr[j]} > {key}, need to shift.", 'line': 4}
+                yield {**base, 'arr': arr.copy(), 'swap': [j+1, j+2], 'sorted': sorted_range, 'msg': f"Shifting {arr[j]} to right.", 'line': 5}
                 arr[j + 1] = arr[j]
                 j -= 1
             arr[j + 1] = key
             sorted_range.append(i)
-            yield {'arr': arr.copy(), 'sorted': sorted_range, 'msg': f"Placed {key} at its correct position {j + 1}."}
+            yield {**base, 'arr': arr.copy(), 'sorted': sorted_range, 'msg': f"Placed {key} at its correct position.", 'line': 7}
         self.arr = arr
-        yield {'arr': arr.copy(), 'sorted': list(range(n)), 'msg': "Array is completely sorted!"}
+        yield {**base, 'arr': arr.copy(), 'sorted': list(range(n)), 'msg': "Array is completely sorted!", 'line': 0}
 
     def quick_sort(self):
         arr = self.arr.copy()

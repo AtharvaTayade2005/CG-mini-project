@@ -201,3 +201,7 @@ class BSTView(BaseView):
     def _finish_highlight(self, node, remaining):
         self.canvas.itemconfig(node['circle'], fill="#06B6D4")
         self.animate_traversal(remaining)
+
+    def show_default_info(self):
+        if self.app:
+            self.app.update_info("O(log N)", "O(N)", ["class BST:", "    def insert(self, val)...", "    def delete(self, val)...", "    def search(self, val)...", "    def inorder(self)..."], None)

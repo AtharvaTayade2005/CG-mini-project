@@ -89,6 +89,11 @@ class LinkedListView(BaseView):
         }
         self.nodes.append(new_node)
         self.set_explanation(f"INSERT TAIL: Appending '{value}' at the end. The previous tail's 'next' pointer now links to this new node.")
+        
+        if self.app:
+            self.app.update_info("O(N)", "O(1)", 
+                ["def insert_tail(head, val):", "    new_node = Node(val)", "    if not head: return new_node", "    curr = head", "    while curr.next: curr = curr.next", "    curr.next = new_node"], 5)
+
         self.animate_insert(new_node)
 
     def insert_head(self, value):
@@ -128,6 +133,11 @@ class LinkedListView(BaseView):
         }
         self.nodes.insert(0, new_node)
         self.set_explanation(f"INSERT HEAD: Adding '{value}' at the front. The new node's 'next' pointer links to the old head.")
+        
+        if self.app:
+            self.app.update_info("O(1)", "O(1)", 
+                ["def insert_head(head, val):", "    new_node = Node(val)", "    new_node.next = head", "    head = new_node", "    return head"], 3)
+
         self.animate_shift_then_insert(new_node)
 
     def animate_insert(self, item):
@@ -183,6 +193,11 @@ class LinkedListView(BaseView):
         node = self.nodes.pop(0)
         node['y_target'] = self.height + 100
         self.set_explanation(f"DELETE HEAD: Removing '{node['val']}'. The head pointer now shifts to the next node.")
+        
+        if self.app:
+            self.app.update_info("O(1)", "O(1)", 
+                ["def delete_head(head):", "    if not head: return None", "    return head.next"], 2)
+
         self.animate_delete_then_shift(node)
         
     def delete_tail(self):
@@ -193,6 +208,11 @@ class LinkedListView(BaseView):
         node = self.nodes.pop()
         node['y_target'] = self.height + 100
         self.set_explanation(f"DELETE TAIL: Removing last node '{node['val']}'. The previous node's 'next' pointer becomes NULL.")
+        
+        if self.app:
+            self.app.update_info("O(N)", "O(1)", 
+                ["def delete_tail(head):", "    if not head or not head.next: return None", "    curr = head", "    while curr.next.next: curr = curr.next", "    curr.next = None", "    return head"], 4)
+
         self.animate_delete(node)
 
     def animate_delete(self, node):
@@ -262,3 +282,7 @@ class LinkedListView(BaseView):
             self.after(20, self.animate_shift)
         else:
             self.animating = False
+
+    def show_default_info(self):
+        if self.app:
+            self.app.update_info("O(1) / O(N)", "O(N)", ["class LinkedListNode:", "    def __init__(self, val):", "        self.val = val", "        self.next = None", "", "class LinkedList:", "    def insert_head(self)...", "    def insert_tail(self)..."], None)

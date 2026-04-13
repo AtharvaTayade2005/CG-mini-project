@@ -188,3 +188,7 @@ class AVLTreeView(BaseView):
     def _finish_highlight(self, node, remaining):
         self.canvas.itemconfig(node['circle'], fill="#EC4899")
         self.animate_traversal(remaining)
+
+    def show_default_info(self):
+        if self.app:
+            self.app.update_info("O(log N)", "O(N)", ["class AVLTree:", "    def insert(self, val)...", "    def delete(self, val)...", "    def search(self, val)...", "    def _balance(self, node)..."], None)

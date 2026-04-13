@@ -78,6 +78,11 @@ class StackView(BaseView):
         self.rects.append(new_item)
         
         self.set_explanation(f"PUSH: Placing '{value}' on top of the stack. Stack follows LIFO (Last In, First Out).")
+        
+        if self.app:
+            self.app.update_info("O(1)", "O(N)", 
+                ["def push(stack, item):", "    stack.append(item)"], 1)
+
         self.animate_push(new_item)
 
     def animate_push(self, item):
@@ -111,6 +116,11 @@ class StackView(BaseView):
         item['y_target'] = 10 # Animate back to top
         
         self.set_explanation(f"POP: Removing top element '{item['val']}' from the stack (LIFO).")
+        
+        if self.app:
+            self.app.update_info("O(1)", "O(1)", 
+                ["def pop(stack):", "    if not stack.is_empty():", "        return stack.pop()"], 2)
+
         self.animate_pop(item)
 
     def animate_pop(self, item):
@@ -136,3 +146,7 @@ class StackView(BaseView):
             self.animating = False
             top_val = self.rects[-1]['val'] if self.rects else 'None'
             self.set_explanation(f"POP complete. New top element: {top_val}. Size: {len(self.rects)}.")
+
+    def show_default_info(self):
+        if self.app:
+            self.app.update_info("O(1)", "O(N)", ["class Stack:", "    def __init__(self):", "        self.items = []", "    def push(self, item)...", "    def pop(self)..."], None)
