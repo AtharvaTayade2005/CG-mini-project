@@ -7,3 +7,13 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+tempCodeRunnerFile.py
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+ENV/
+env.bak/
+venv.bak/
+tempCodeRunnerFile.py
