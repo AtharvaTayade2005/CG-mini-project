@@ -318,11 +318,22 @@ class App(ctk.CTk):
             self.current_view = HeapView(self.view_container)
             self.current_view.app = self
             self.current_view.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
+
+            def change_heap_type(value):
+                if not hasattr(self, 'current_view') or not isinstance(self.current_view, HeapView):
+                    return
+                is_min = (value == "Min Heap")
+                self.current_view.set_heap_type(is_min)
+                btn_ext.configure(text=f"Extract {'Min' if is_min else 'Max'}")
+
+            seg_btn = ctk.CTkSegmentedButton(self.action_buttons_frame, values=["Min Heap", "Max Heap"], command=change_heap_type, selected_color=self.accent_color, selected_hover_color=self.accent_hover)
+            seg_btn.pack(side="left", padx=10, pady=20)
+            seg_btn.set("Min Heap")
             
             btn_insert = self.create_action_btn("Insert", lambda: self.current_view.insert(self.input_entry.get()))
             btn_insert.pack(side="left", padx=5, pady=20)
             
-            btn_ext = self.create_action_btn("Extract Min/Max", self.current_view.extract)
+            btn_ext = self.create_action_btn("Extract Min", self.current_view.extract)
             btn_ext.configure(fg_color="#EF4444", hover_color="#DC2626")
             btn_ext.pack(side="left", padx=5, pady=20)
             
