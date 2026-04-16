@@ -227,6 +227,18 @@ class HeapView(BaseView):
         self.canvas.itemconfig(node['arr_rect'], fill="#8B5CF6")
         self.animate_traversal(remaining)
 
+    def set_heap_type(self, is_min):
+        if self.animating: return
+        self.model = HeapModel(is_min=is_min)
+        for node in self.nodes:
+            self.canvas.delete(node['arr_rect'], node['arr_text'], node['tr_circle'], node['tr_text'])
+        self.canvas.delete("line")
+        self.nodes.clear()
+        self.set_explanation(f"Switched to {'Min' if is_min else 'Max'} Heap. Heap cleared.")
+        self.show_default_info()
+
     def show_default_info(self):
         if self.app:
-            self.app.update_info("O(log N)", "O(N)", ["class MinHeap:", "    def __init__(self):", "        self.heap = []", "    def insert(self, val)...", "    def extract_min(self)..."], None)
+            heap_name = "MinHeap" if self.model.is_min else "MaxHeap"
+            extract_name = "extract_min" if self.model.is_min else "extract_max"
+            self.app.update_info("O(log N)", "O(N)", [f"class {heap_name}:", "    def __init__(self):", "        self.heap = []", "    def insert(self, val)...", f"    def {extract_name}(self)..."], None)
