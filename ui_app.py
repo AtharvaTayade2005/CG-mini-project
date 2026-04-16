@@ -262,12 +262,6 @@ class App(ctk.CTk):
         # Reset play button
         self.btn_play_pause.configure(text="⏸ Pause", fg_color="#10B981", hover_color="#059669")
         
-        # Show default pseudocode template for the selected view
-        if hasattr(self.current_view, 'show_default_info'):
-            self.current_view.show_default_info()
-        else:
-            self.update_info("-", "-", ["Load an algorithm or perform an action to view code."], None)
-
         if name == "Stack":
             self.current_view = StackView(self.view_container)
             self.current_view.app = self
@@ -508,3 +502,9 @@ class App(ctk.CTk):
             label = ctk.CTkLabel(self.view_container, text=f"{name} View Placeholder", font=ctk.CTkFont(family="Inter", size=20))
             label.grid(row=0, column=0)
             self.current_view = label
+
+        # Show default pseudocode template for the newly selected view
+        if hasattr(self.current_view, 'show_default_info'):
+            self.current_view.show_default_info()
+        else:
+            self.update_info("-", "-", ["Load an algorithm or perform an action to view code."], None)

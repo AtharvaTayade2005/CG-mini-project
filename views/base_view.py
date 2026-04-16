@@ -54,5 +54,5 @@ class BaseView(ctk.CTkFrame):
                 tags="explanation",
                 justify="right",
                 anchor="ne",
-                width=max(200, self.width // 2.5) # enable text wrapping while keeping it to the right
+                width=max(400, self.width // 1.5) # enable text wrapping while keeping it to the right
             )
