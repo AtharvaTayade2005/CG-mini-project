@@ -229,7 +229,7 @@ class App(ctk.CTk):
         if not hasattr(self, '_current_pseudo') or self._current_pseudo != code_lines:
             self.code_textbox.configure(state="normal")
             self.code_textbox.delete("1.0", "end")
-            self.code_textbox.insert("1.0", "\\n".join(code_lines))
+            self.code_textbox.insert("1.0", "\n".join(code_lines))
             self.code_textbox.configure(state="disabled")
             self._current_pseudo = code_lines
             
